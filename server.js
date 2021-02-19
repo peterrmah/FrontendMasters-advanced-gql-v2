@@ -4,18 +4,39 @@ const {
   AuthenticationError,
   UserInputError,
   ApolloError,
+  SchemaDirectiveVisitor,
 } = require("apollo-server");
+const { defaultFieldResolver, GraphQLString } = require("graphql");
 const gql = require("graphql-tag");
 
 const pubSub = new PubSub();
 const NEW_ITEM = "NEW_ITEM";
 
+class LogDirective extends SchemaDirectiveVisitor {
+  visitFieldDefinition(field) {
+    const resolver = field.resolve || defaultFieldResolver;
+
+    field.args.push({
+      type: GraphqlString,
+      name: "message",
+    });
+
+    field.resolve = (root, { message, ...rest }, ctx, info) => {
+      const { message: schemaMessage } = this.args;
+      console.log("👨🏽‍🚀 Hi", message || schemaMessage);
+      return resolver.call(this, root, rest, ctx, info);
+    };
+  }
+}
+
 const typeDefs = gql`
+  directive @log(message: String = "my message") on FIELD_DEFINITION
+
   type User {
-    id: ID!
-    error: String!
+    id: ID! @log(message: "id here")
+    error: String! @deprecated(reason: "use this other field")
     username: String!
-    createdAt: Int!
+    createdAt: String!
   }
 
   type Settings {
@@ -101,9 +122,8 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  formatError(e) {
-    console.log(e);
-    return e;
+  schemaDirectives: {
+    log: LogDirective,
   },
   context({ connection, req }) {
     if (connection) {

@@ -44,6 +44,15 @@
       "avatar": "http",
       "createdAt": 1613761334800,
       "id": "f3e8ICNoZPaS35NE0jHV4"
+    },
+    {
+      "email": "shmoe@yo.com",
+      "password": "password",
+      "role": "MEMBER",
+      "verified": false,
+      "avatar": "http",
+      "createdAt": 1613774990377,
+      "id": "gXdgd6Bn_V6bD0dVI9hqm"
     }
   ],
   "posts": [
